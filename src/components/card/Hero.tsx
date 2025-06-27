@@ -20,27 +20,31 @@ export default function EnhancedHeroPage() {
     }
   }, [authUser, userData]);
 
-  const handleUsernameSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!username.trim()) return;
+const handleUsernameSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!username.trim()) return;
 
-    setLoading(true);
-    setError('');
+  setLoading(true);
+  setError('');
 
-    try {
-      const response = await fetch(`/api/github-user/${username}`);
-      if (!response.ok) {
-        throw new Error('User not found');
-      }
-      const data = await response.json();
-      setUserData(data);
-    } catch (err) {
-      setError('Failed to fetch user data. Please check the username.');
-      setUserData(null);
-    } finally {
-      setLoading(false);
+  try {
+    const response = await fetch(`/api/githubuser/${username}`);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
     }
-  };
+    
+    const data = await response.json();
+    setUserData(data);
+  } catch (err) {
+    console.error('Fetch error:', err);
+    setError(err instanceof Error ? err.message : 'Failed to fetch user data');
+    setUserData(null);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleSignOut = async () => {
     await signOut();
@@ -165,7 +169,7 @@ export default function EnhancedHeroPage() {
           </div>
 
           {/* Right Side - GitHub Card */}
-          <div className="flex justify-center">
+          <div className="flex h-screen justify-center">
             <GitHubCard userData={userData} isAuthenticated={!!authUser} />
           </div>
         </div>
