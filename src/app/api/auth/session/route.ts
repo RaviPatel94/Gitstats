@@ -1,8 +1,8 @@
 // app/api/auth/session/route.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const cookieStore = await cookies();
     const userCookie = cookieStore.get('github_user');
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const userData = JSON.parse(userCookie.value);
     
     // Remove sensitive data before sending to client
-    const { access_token, ...safeUserData } = userData;
+    const { ...safeUserData } = userData;
     
     return NextResponse.json({ user: safeUserData });
   } catch (error) {
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE() {
   const response = NextResponse.json({ success: true });
   
   // Clear the auth cookie

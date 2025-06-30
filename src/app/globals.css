@@ -1,11 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
 @import "tailwindcss";
 
-*{
-  font-family: "IBM Plex Sans Condensed", sans-serif;
+@font-face {
+  font-family: 'IBM Plex Sans Condensed';
+  src: url('/fonts/IBMPlexSansCondensed/IBMPlexSansCondensed-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
 }
 
-
+@font-face {
+  font-family: 'IBM Plex Sans Condensed';
+  src: url('/fonts/IBMPlexSansCondensed/IBMPlexSansCondensed-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
 :root {
   --background: #ffffff;
   --foreground: #171717;

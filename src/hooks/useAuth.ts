@@ -24,6 +24,7 @@ export function useAuth() {
   const checkSession = async () => {
     try {
       const response = await fetch('/api/auth/session');
+
       if (response.ok) {
         const data = await response.json();
         setState({
@@ -39,6 +40,9 @@ export function useAuth() {
         });
       }
     } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Session check failed:', error);
+      }
       setState({
         user: null,
         loading: false,
@@ -52,7 +56,7 @@ export function useAuth() {
       const response = await fetch('/api/auth/session', {
         method: 'DELETE',
       });
-      
+
       if (response.ok) {
         setState({
           user: null,
@@ -61,6 +65,9 @@ export function useAuth() {
         });
       }
     } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Sign-out failed:', error);
+      }
       setState(prev => ({
         ...prev,
         error: 'Failed to sign out',
