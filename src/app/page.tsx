@@ -1,4 +1,4 @@
-import EnhancedHeroPage from '../components/Card/Hero'
+import EnhancedHeroPage from '../components/card/Hero'
 import './globals.css';
 export default function Home() {
   return (
