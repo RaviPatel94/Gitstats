@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
     const params = new URLSearchParams({
       client_id: githubClientId,
       redirect_uri: `${request.nextUrl.origin}/api/auth/github`,
-      scope: 'read:user user:email read:org',
+      // Minimal required scopes
+      scope: 'read:user repo', // Only what's needed for user info and repo access
       state: 'random-state-string', // In production, use a proper state value
     });
 
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
       throw new Error(tokenData.error_description || 'OAuth error');
     }
 
-    // Get user data with the access token
+    // Get comprehensive user data with the access token
     const userResponse = await fetch('https://api.github.com/user', {
       headers: {
         'Authorization': `token ${tokenData.access_token}`,
@@ -58,15 +59,10 @@ export async function GET(request: NextRequest) {
 
     const userData = await userResponse.json();
 
-    // Get user organizations
-    const orgsResponse = await fetch('https://api.github.com/user/orgs', {
-      headers: {
-        'Authorization': `token ${tokenData.access_token}`,
-        'Accept': 'application/vnd.github.v3+json',
-      },
-    });
+    // No additional API calls needed if not using the data
 
-    const orgsData = await orgsResponse.json();
+    // Check token scopes to verify permissions
+    const tokenScopes = tokenData.scope ? tokenData.scope.split(',').map((s: string) => s.trim()) : [];
 
     // In a real app, you'd store this in a database or session
     // For now, we'll redirect back to the main page with user data
@@ -75,8 +71,10 @@ export async function GET(request: NextRequest) {
     // Set a cookie with user data (in production, use proper session management)
     response.cookies.set('github_user', JSON.stringify({
       ...userData,
-      organizations: orgsData,
-      access_token: tokenData.access_token
+      access_token: tokenData.access_token,
+      token_scopes: tokenScopes,
+      can_access_private_repos: tokenScopes.includes('repo'),
+      authenticated_at: new Date().toISOString()
     }), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

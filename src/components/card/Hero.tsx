@@ -1,3 +1,4 @@
+  
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,8 +12,7 @@ export default function EnhancedHeroPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { user: authUser, loading: authLoading, signInWithGitHub, signOut } = useAuth();
-  
-  // Only auto-populate when authenticated user exists and no manual search has been done
+
   useEffect(() => {
     if (authUser && !userData && !username) {
       setUserData(authUser);
@@ -29,12 +29,10 @@ export default function EnhancedHeroPage() {
 
     try {
       const response = await fetch(`/api/githubuser/${username}`);
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
       }
-      
       const data = await response.json();
       setUserData(data);
     } catch (err) {
@@ -48,9 +46,6 @@ export default function EnhancedHeroPage() {
 
   const handleSignOut = async () => {
     await signOut();
-    // Don't clear userData and username on sign out - let user keep their search results
-    // setUserData(null);
-    // setUsername('');
   };
 
   const handleClearSearch = () => {
@@ -62,7 +57,6 @@ export default function EnhancedHeroPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-8">
-        {/* Header with Auth Status */}
         {!authLoading && (
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-4xl font-bold">
@@ -98,69 +92,61 @@ export default function EnhancedHeroPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          {/* Left Side - Input Form */}
           <div className="space-y-6">
-            <div>
-              <form onSubmit={handleUsernameSubmit} className="space-y-4">
-                <div>
-                  <label htmlFor="username" className="block text-lg font-medium mb-2">
-                    Github username :
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      id="username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      className="flex-1  px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter GitHub username"
-                      disabled={loading}
-                    />
-                    {userData && (
-                      <button
-                        type="button"
-                        onClick={handleClearSearch}
-                        className="px-4 py-3 cursor-pointer bg-gray-600 hover:bg-gray-700 rounded-lg font-medium transition-colors"
-                        title="Clear search"
-                      >
-                        ✕
-                      </button>
-                    )}
+            <form onSubmit={handleUsernameSubmit} className="space-y-4">
+              <label htmlFor="username" className="block text-lg font-medium mb-2">
+                Github username :
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="flex-1 px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter GitHub username"
+                  disabled={loading}
+                />
+                {userData && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="px-4 py-3 cursor-pointer bg-gray-600 hover:bg-gray-700 rounded-lg font-medium transition-colors"
+                    title="Clear search"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !username.trim()}
+                className="w-full cursor-pointer px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
+              >
+                {loading ? 'Loading...' : 'Generate Card'}
+              </button>
+            </form>
+
+            {error && (
+              <div className="mt-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-200">
+                {error}
+              </div>
+            )}
+
+            {userData && (
+              <div className="mt-4 space-y-2">
+                {authUser && userData.login === authUser.login ? (
+                  <div className="p-3 bg-green-900/50 border border-green-500 rounded-lg text-green-200">
+                    ✓ Authenticated with GitHub - showing enhanced data
                   </div>
-                </div>
-                
-                <button
-                  type="submit"
-                  disabled={loading || !username.trim()}
-                  className="w-full cursor-pointer  px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
-                >
-                  {loading ? 'Loading...' : 'Generate Card'}
-                </button>
-              </form>
+                ) : (
+                  <div className="p-3 bg-blue-900/50 border border-blue-500 rounded-lg text-blue-200">
+                    ℹ Showing public GitHub data for @{userData.login}
+                  </div>
+                )}
+              </div>
+            )}
 
-              {error && (
-                <div className="mt-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-200">
-                  {error}
-                </div>
-              )}
-
-              {/* Status Messages */}
-              {userData && (
-                <div className="mt-4 space-y-2">
-                  {authUser && userData.login === authUser.login ? (
-                    <div className="p-3 bg-green-900/50 border border-green-500 rounded-lg text-green-200">
-                      ✓ Authenticated with GitHub - showing enhanced data
-                    </div>
-                  ) : (
-                    <div className="p-3 bg-blue-900/50 border border-blue-500 rounded-lg text-blue-200">
-                      ℹ Showing public GitHub data for @{userData.login}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Authentication Benefits */}
             <div className="pt-6 border-t border-gray-700">
               {!authUser ? (
                 <div>
@@ -172,7 +158,7 @@ export default function EnhancedHeroPage() {
                     <p>• Real-time activity feed</p>
                   </div>
                   <p className="text-gray-400 text-sm mb-4">
-                    Don't worry - you can still search any public GitHub profile without signing in!
+                    you can still search any public GitHub profile without signing in!
                   </p>
                 </div>
               ) : (
@@ -188,7 +174,6 @@ export default function EnhancedHeroPage() {
               )}
             </div>
 
-            {/* Popular Examples */}
             {!userData && (
               <div className="pt-6 border-t border-gray-700">
                 <h3 className="text-lg font-medium mb-3">Try these popular profiles:</h3>
@@ -207,9 +192,8 @@ export default function EnhancedHeroPage() {
             )}
           </div>
 
-          {/* Right Side - GitHub Card */}
           <div className="flex h-screen justify-center">
-            <GitHubCard userData={userData} isAuthenticated={!!authUser} />
+            <GitHubCard userData={userData}  />
           </div>
         </div>
       </div>

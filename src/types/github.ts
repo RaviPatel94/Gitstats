@@ -1,38 +1,30 @@
+// Basic GitHub user info needed for your card
 export interface GitHubUser {
-  login: string;
-  id: number;
-  node_id: string;
+  login: string;              // username
+  name: string;
   avatar_url: string;
-  gravatar_id: string;
-  url: string;
-  html_url: string;
-  followers_url: string;
-  following_url: string;
-  gists_url: string;
-  starred_url: string;
-  subscriptions_url: string;
-  organizations_url: string;
-  repos_url: string;
-  events_url: string;
-  received_events_url: string;
-  type: string;
-  site_admin: boolean;
-  name: string | null;
-  company: string | null;
-  blog: string;
-  location: string | null;
-  email: string | null;
-  hireable: boolean | null;
-  bio: string | null;
-  twitter_username: string | null;
-  public_repos: number;
-  public_gists: number;
-  followers: number;
-  following: number;
+  bio: string;
+  company: string;
+  location: string;
   created_at: string;
-  updated_at: string;
+  public_repos: number;
+  followers: number;
+
+  // Extended stats from your API
+  totalCommits: number;
+  totalStars: number;
+  totalPRs: number;
+  totalIssues: number;
+  topLanguages: string[];
+
+  // Optional API debug info
+  _metadata?: {
+    authenticated: boolean;
+    timestamp: string;
+  };
 }
 
+// Optional, if you ever display orgs
 export interface GitHubOrganization {
   id: number;
   login: string;
@@ -40,51 +32,25 @@ export interface GitHubOrganization {
   description: string;
 }
 
-
+// Minimal repo shape — optional, for future repo card or star count
 export interface GitHubRepo {
   id: number;
   name: string;
-  full_name: string;
-  private: boolean;
   html_url: string;
   description: string | null;
-  fork: boolean;
-  url: string;
-  created_at: string;
-  updated_at: string;
-  pushed_at: string;
-  git_url: string;
-  ssh_url: string;
-  clone_url: string;
-  size: number;
   stargazers_count: number;
-  watchers_count: number;
   language: string | null;
   forks_count: number;
-  archived: boolean;
-  disabled: boolean;
-  open_issues_count: number;
-  license: {
-    key: string;
-    name: string;
-    spdx_id: string;
-    url: string;
-    node_id: string;
-  } | null;
-  allow_forking: boolean;
-  is_template: boolean;
-  topics: string[];
-  visibility: string;
-  forks: number;
-  open_issues: number;
-  watchers: number;
-  default_branch: string;
+  created_at: string;
+  updated_at: string;
 }
 
+// Authenticated user with token if needed
 export interface GitHubAuthUser extends GitHubUser {
   access_token?: string;
 }
 
+// Auth session if you're using next-auth or similar
 export interface AuthSession {
   user: GitHubAuthUser;
   expires: string;
