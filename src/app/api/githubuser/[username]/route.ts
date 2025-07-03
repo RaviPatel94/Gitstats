@@ -105,7 +105,7 @@ export async function GET(
 
     // Fetch user data and repositories in parallel
     // Use different repo queries based on authentication
-    const reposUrl = useUserToken && authenticatedUser.can_access_private_repos
+    const reposUrl = useUserToken && authenticatedUser?.can_access_private_repos
       ? `https://api.github.com/user/repos?per_page=100&sort=updated&affiliation=owner` // Gets user's own repos including private
       : `https://api.github.com/users/${username}/repos?per_page=100&sort=updated` // Public repos only
 
