@@ -1,5 +1,6 @@
 import { GitHubUser } from '@/types/github'
 import Image from 'next/image'
+import QRCode from "react-qr-code";
 
 interface GitHubCardProps {
   userData: GitHubUser | null
@@ -98,7 +99,7 @@ export function GitHubCard({ userData}: GitHubCardProps) {
 
           <div className="flex flex-col justify-between h-full">
             <div>
-              <div className="bg-[#2B3137] text-white px-3 pt-1 pb-1 rounded-lg text-[27px] font-medium">{data.name}</div>
+              <div className="bg-[#2B3137] text-white px-3 py-1.5 rounded-lg text-[27px] leading-none font-medium">{data.name}</div>
               <p className="text-gray-700 text-[17px]">@{data.login}</p>
             </div>
             <div className="flex gap-3 mt-2 text-[14px] text-black">
@@ -116,7 +117,7 @@ export function GitHubCard({ userData}: GitHubCardProps) {
 
         {/* Bio */}
         <div>
-          <p className="text-black text-[18px] leading-[22px] font-normal max-h-[68px] mb-2">{data.bio}</p>
+          <p className="text-black text-[18px] bio-text leading-[22px] font-normal max-h-[68px] mb-2">{data.bio}</p>
           <p className="text-black text-[18px] mb-4">Company: <span className="font-medium">{data.company || 'Unemployed'}</span></p>
         </div>
 
@@ -141,30 +142,24 @@ export function GitHubCard({ userData}: GitHubCardProps) {
         </div>
 
         {/* Footer Info */}
-        <div className="flex justify-between items-end text-black">
+        <div className="flex justify-between items-start text-black">
           <div className="text-[18px]">
             <p>Joined: <span className="font-medium">{formatDate(data.created_at)}</span></p>
             <p>Location: <span className="font-medium">{data.location || "Unknown"}</span></p>
-            <div className="text-[14px] mt-1 font-medium">
-              <div>
-                {topLanguages.slice(0, 3).map((lang, i) => (
-                  <span key={i} className="mr-2">{lang}</span>
-                ))}
-              </div>
-              <div>
-                {topLanguages.slice(3).map((lang, i) => (
-                  <span key={i + 3} className="mr-2">{lang}</span>
-                ))}
-              </div>
+            <div className="text-[14px] mt-1 max-w-[220px] flex flex-wrap font-medium">
+              {topLanguages.slice(0, 5).map((lang, i) => (
+                <span key={i} className="mr-2 mb-1">{lang}</span>
+              ))}
             </div>
           </div>
-          <Image
+          {/* <Image
             src="/assets/watermark-template-1.svg"
             alt="Watermark"
             className="w-[100px] h-[100px] object-cover"
             width={500}
             height={500}
-          />
+          /> */}
+          <QRCode value={`https://github.com/${data.login}`} className='w-[100px] h-[100px]' />
         </div>
 
         <div className="text-xs text-center text-gray-400 mt-1">Made by : RaviPatel94</div>
