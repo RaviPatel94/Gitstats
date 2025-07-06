@@ -1,4 +1,4 @@
-// Basic GitHub user info needed for your card
+// Update your GitHubUser interface in your types file
 export interface GitHubUser {
   login: string;              // username
   name: string;
@@ -21,8 +21,11 @@ export interface GitHubUser {
   _metadata?: {
     authenticated: boolean;
     timestamp: string;
+    commitCalculationMethod?: string;  // Add this
+    dataScope?: string;                // Add this
   };
 }
+
 
 // Optional, if you ever display orgs
 export interface GitHubOrganization {

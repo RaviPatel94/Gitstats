@@ -1,5 +1,5 @@
 // app/api/auth/session/route.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 export async function GET() {
@@ -55,8 +55,9 @@ export async function GET() {
       // Don't clear cookie for network errors, but note the issue
     }
     
-    // Remove sensitive data before sending to client
-    const { access_token, ...safeUserData } = userData;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { access_token: _, ...safeUserData } = userData;
+
     
     return NextResponse.json({ 
       user: safeUserData,
@@ -143,7 +144,7 @@ export async function DELETE() {
 }
 
 // Optional: Add a refresh endpoint to extend session
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const cookieStore = await cookies();
     const userCookie = cookieStore.get('github_user');

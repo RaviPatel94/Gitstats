@@ -117,10 +117,10 @@ export async function GET(request: NextRequest) {
       emailResponse.ok ? emailResponse.json() : []
     ]);
 
-    // Find primary email
-    const primaryEmail = Array.isArray(emailData) 
-      ? emailData.find((email: any) => email.primary)?.email || userData.email
-      : userData.email;
+const primaryEmail = Array.isArray(emailData)
+  ? (emailData as { email: string; primary: boolean }[]).find((email) => email.primary)?.email || userData.email
+  : userData.email;
+
 
     // Parse token scopes
     const tokenScopes = tokenData.scope ? tokenData.scope.split(/[,\s]+/).filter(Boolean) : [];
