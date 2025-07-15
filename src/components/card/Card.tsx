@@ -102,11 +102,11 @@ export function GitHubCard({ userData}: GitHubCardProps) {
               <div className="bg-[#2B3137] text-white px-3 py-1.5 rounded-lg text-[27px] leading-none font-medium">{data.name}</div>
               <p className="text-gray-700 text-[17px]">@{data.login}</p>
             </div>
-            <div className="flex gap-3 mt-2 text-[14px] text-black">
+            <div className="flex flex-wrap gap-2 mt-2 text-[14px] text-black">
               <span className='flex items-center gap-1 text-[16px]'><span className=" font-medium">{formatNumber(data.followers)}</span> Followers </span>
               <span className="flex text-[16px] items-center font-medium">
-                {data.totalStars}
-                <svg className="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                {formatNumber(data.totalStars)}
+                <svg className="w-4 h-4 ml-[2px" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.164c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.286 3.957c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.784.57-1.838-.197-1.539-1.118l1.285-3.957a1 1 0 00-.364-1.118L2.07 9.384c-.783-.57-.38-1.81.588-1.81h4.165a1 1 0 00.95-.69l1.286-3.957z" />
                 </svg>
 
@@ -128,7 +128,7 @@ export function GitHubCard({ userData}: GitHubCardProps) {
             <div className="text-[16px] -mt-1 text-black">Commits</div>
           </div>
           <div>
-            <div className="text-xl font-medium text-gray-800">{data.public_repos}</div>
+            <div className="text-xl font-medium text-gray-800">{formatNumber(data.public_repos)}</div>
             <div className="text-[16px] -mt-1 text-black">Repos</div>
           </div>
           <div>
