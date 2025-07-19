@@ -1,6 +1,6 @@
 import type { UserStatsData, UserStatsResult, RepositoryData, LanguageEdgeData, GraphQLResponse } from "./types.ts"
 import { getCompleteUserData } from "./graphql"
-import { getComprehensiveCommitCount } from "./commit-counter"
+import { getAccurateCommitCount } from "./commit-counter"
 import { retryApiCall, wrapTextInLines, apiLogger } from "./utils"
 import { CustomApiError } from "./errors" // Declare the variables here
 import { MissingParameterError } from "@/types/github"
@@ -57,7 +57,7 @@ export const getUserStats = async (
     .filter((repo) => !hiddenRepos.has(repo.name))
     .reduce((total, current) => total + current.stargazers.totalCount, 0)
 
-  const commitsResult = await getComprehensiveCommitCount(username, token, isAuthenticated, userData)
+  const commitsResult = await getAccurateCommitCount(username, token, isAuthenticated, userData)
 
   return {
     totalCommits: commitsResult.count,
