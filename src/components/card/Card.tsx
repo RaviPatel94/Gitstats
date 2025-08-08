@@ -162,7 +162,7 @@ export function GitHubCard({ userData}: GitHubCardProps) {
           <QRCode value={`https://github.com/${data.login}`} className='w-[100px] h-[100px]' />
         </div>
 
-        <div className="text-xs text-center text-gray-400 mt-1">Made by : RaviPatel94</div>
+        <div className="text-xs text-center text-gray-400 mt-1">gityou.vercel.app</div>
       </div>
     </div>
   )

@@ -232,7 +232,7 @@ export interface UserStatsResult {
 
 export interface GraphQLRequestParams {
   query: string
-  variables: Record<string, any>
+  variables: Record<string, unknown>
 }
 
 export interface ApiResponse<T> {
@@ -240,6 +240,7 @@ export interface ApiResponse<T> {
   status: number
   statusText: string
 }
+
 
 export class CustomApiError extends Error {
   static readonly USER_NOT_FOUND = "USER_NOT_FOUND"

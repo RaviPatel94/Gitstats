@@ -82,7 +82,7 @@ export interface RepositoryData {
 }
 
 export interface UserStatsData {
-  repositoriesContributedTo: any;
+  repositoriesContributedTo: unknown;
   id: string;
   name: string;
   login: string;
