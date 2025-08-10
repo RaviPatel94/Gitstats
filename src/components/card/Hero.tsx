@@ -78,7 +78,7 @@ export default function EnhancedHeroPage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       <div className="container mx-auto px-4 py-8 flex-1">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <div className="flex flex-col lg:flex-row gap-8 items-center justify-around">
           <div className="space-y-6">
             <h1 className="text-4xl font-bold">
               Create your own Github card!
@@ -177,7 +177,7 @@ export default function EnhancedHeroPage() {
             )}
           </div>
 
-          <div className="flex flex-col h-screen justify-center items-center">
+          <div className="flex flex-col h-screen scale-75 sm:scale-100 justify-center items-center">
             <div ref={cardRef}>
               <GitHubCard userData={userData} />
             </div>
