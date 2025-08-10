@@ -11,7 +11,7 @@ export default function EnhancedHeroPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState(false);
-  const { user: authUser,} = useAuth();
+  const { user: authUser } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,15 +52,11 @@ export default function EnhancedHeroPage() {
     try {
       const dataUrl = await toPng(cardRef.current, {
         quality: 1.0,
-        pixelRatio: 2, // Higher resolution
+        pixelRatio: 2,
         backgroundColor: 'transparent',
-        filter: () => {
-          // Filter out any unwanted elements if needed
-          return true;
-        }
+        filter: () => true
       });
 
-      // Create download link
       const link = document.createElement('a');
       link.download = `github-card-${userData.login}.png`;
       link.href = dataUrl;
@@ -80,8 +76,8 @@ export default function EnhancedHeroPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+      <div className="container mx-auto px-4 py-8 flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           <div className="space-y-6">
             <h1 className="text-4xl font-bold">
@@ -121,7 +117,7 @@ export default function EnhancedHeroPage() {
               </button>
             </form>
 
-                        {userData && (
+            {userData && (
               <button
                 onClick={handleDownloadCard}
                 disabled={downloading}
@@ -188,6 +184,19 @@ export default function EnhancedHeroPage() {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 py-4 text-center text-gray-400 text-sm border-t border-gray-700">
+        Made by{' '}
+        <a
+          href="https://github.com/ravipatel94"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 hover:underline"
+        >
+          ravipatel94
+        </a>
+      </footer>
     </div>
   );
 }
