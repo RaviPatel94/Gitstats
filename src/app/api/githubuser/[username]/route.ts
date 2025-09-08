@@ -82,7 +82,7 @@ export async function GET(
       completeUserData,
       repositoriesToExclude,
     );
-
+    
     const processingTime = Date.now() - startTime;
     apiLogger.log(`Total processing time: ${processingTime}ms`);
     apiLogger.log(

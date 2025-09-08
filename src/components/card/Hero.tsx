@@ -4,6 +4,7 @@ import { GitHubCard } from './Card';
 import { GitHubUser } from '@/types/github';
 import { useAuth } from '@/hooks/useAuth';
 import { toPng } from "html-to-image";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function EnhancedHeroPage() {
   const [username, setUsername] = useState('');
@@ -11,6 +12,9 @@ export default function EnhancedHeroPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareImage, setShareImage] = useState<string | null>(null);
+
   const { user: authUser } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -36,6 +40,16 @@ export default function EnhancedHeroPage() {
       }
       const data = await response.json();
       setUserData(data);
+
+      const { error: dbError } = await supabase
+        .from("github_users")
+        .insert([{ username }]);
+
+      // Ignore duplicate username error
+      if (dbError && dbError.code !== "23505") {
+        console.error("Supabase insert error:", dbError);
+      }
+
     } catch (err) {
       console.error('Fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch user data');
@@ -66,6 +80,46 @@ export default function EnhancedHeroPage() {
       setError('Failed to download card. Please try again.');
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleShareCard = async () => {
+    if (!cardRef.current || !userData) return;
+    
+    try {
+      const dataUrl = await toPng(cardRef.current, { 
+        pixelRatio: 2,
+        backgroundColor: 'transparent'
+      });
+      
+      // Convert data URL to blob
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      
+      const file = new File([blob], `github-card-${userData.login}.png`, {
+        type: 'image/png'
+      });
+
+      // Check if Web Share API is supported and can share files
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: `GitHub Card - ${userData.login}`,
+            text: `Check out ${userData.login}'s GitHub profile card!`,
+            files: [file]
+          });
+          return; // Successfully shared, exit function
+        } catch (shareError) {
+          console.log('Native share failed, falling back to modal:', shareError);
+        }
+      }
+
+      // Fallback to modal if Web Share API is not supported or failed
+      setShareImage(dataUrl);
+      setShareOpen(true);
+    } catch (error) {
+      console.error('Error generating share image:', error);
+      setError('Failed to generate share image. Please try again.');
     }
   };
 
@@ -118,25 +172,37 @@ export default function EnhancedHeroPage() {
             </form>
 
             {userData && (
-              <button
-                onClick={handleDownloadCard}
-                disabled={downloading}
-                className="mt-6 px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center gap-2"
-              >
-                {downloading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Downloading...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    Download Card
-                  </>
-                )}
-              </button>
+              <>
+                <button
+                  onClick={handleDownloadCard}
+                  disabled={downloading}
+                  className="mt-6 px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                  {downloading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Download Card
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={handleShareCard}
+                  className="mt-3 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12v.01M12 20v.01M20 12v.01M12 4v.01M12 16v-8m4 4H8" />
+                  </svg>
+                  Share Card
+                </button>
+              </>
             )}
 
             {error && (
@@ -184,6 +250,123 @@ export default function EnhancedHeroPage() {
           </div>
         </div>
       </div>
+
+      {/* Share Modal */}
+      {shareOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-2xl w-80 space-y-4 text-center">
+            <h2 className="text-lg font-bold">Share this card</h2>
+
+            {shareImage && (
+              <img src={shareImage} alt="Preview" className="rounded-lg border border-gray-600 mx-auto" />
+            )}
+
+            <button
+              onClick={async () => {
+                if (shareImage) {
+                  const response = await fetch(shareImage);
+                  const blob = await response.blob();
+                  const file = new File([blob], `github-card-${userData?.login}.png`, {
+                    type: 'image/png'
+                  });
+                  
+                  // Try native share first
+                  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                      await navigator.share({
+                        title: `GitHub Card - ${userData?.login}`,
+                        text: `Check out ${userData?.login}'s GitHub profile card!`,
+                        files: [file]
+                      });
+                      setShareOpen(false);
+                      return;
+                    } catch (err) {
+                      console.log('Native share failed');
+                    }
+                  }
+                  
+                  const link = document.createElement('a');
+                  link.download = `github-card-${userData?.login}.png`;
+                  link.href = shareImage;
+                  link.click();
+                }
+              }}
+              className="w-full px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg mb-3"
+            >
+              Share Image
+            </button>
+
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                  "Check out my GitHub card and create your own at https://gityou.vercel.app/"
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg"
+              >
+                WhatsApp
+              </a>
+
+              <a
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+                  "Check out my GitHub card and create your own at https://gityou.vercel.app/"
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg"
+              >
+                Twitter
+              </a>
+
+              <a
+                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+                  "https://gityou.vercel.app/"
+                )}&title=${encodeURIComponent(
+                  "Check out my GitHub card and create your own!"
+                )}&summary=${encodeURIComponent(
+                  "Check out my GitHub card and create your own at https://gityou.vercel.app/"
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg"
+              >
+                LinkedIn
+              </a>
+
+              <a
+                href={`https://t.me/share/url?url=${encodeURIComponent(
+                  "https://gityou.vercel.app/"
+                )}&text=${encodeURIComponent(
+                  "Check out my GitHub card and create your own at https://gityou.vercel.app/"
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-2 bg-sky-500 hover:bg-sky-600 rounded-lg"
+              >
+                Telegram
+              </a>
+            </div>
+
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                alert("Link copied!");
+              }}
+              className="w-full mt-3 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+            >
+              Copy Link
+            </button>
+
+            <button
+              onClick={() => setShareOpen(false)}
+              className="mt-4 w-full px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="bg-gray-800 py-4 text-center text-gray-400 text-sm border-t border-gray-700">
