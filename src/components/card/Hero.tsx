@@ -45,7 +45,6 @@ export default function EnhancedHeroPage() {
         .from("github_users")
         .insert([{ username }]);
 
-      // Ignore duplicate username error
       if (dbError && dbError.code !== "23505") {
         console.error("Supabase insert error:", dbError);
       }
@@ -281,7 +280,7 @@ export default function EnhancedHeroPage() {
                       setShareOpen(false);
                       return;
                     } catch (err) {
-                      console.log('Native share failed');
+                       console.log('Native share failed:', err);
                     }
                   }
                   
