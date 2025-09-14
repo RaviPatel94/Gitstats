@@ -66,7 +66,6 @@ export async function GET(
 
     const basicUserData = await userApiResponse.json();
 
-    // Get complete user data for languages
     const completeDataResponse = await getCompleteUserData(
       username,
       githubToken,
@@ -100,7 +99,7 @@ export async function GET(
       created_at: basicUserData.created_at,
       public_repos: basicUserData.public_repos,
       followers: basicUserData.followers,
-      totalCommits: userStatsData.totalCommits + 1,
+      totalCommits: userStatsData.totalCommits,
       totalStars: userStatsData.totalStars,
       totalPRs: userStatsData.totalPRs,
       totalIssues: userStatsData.totalIssues,

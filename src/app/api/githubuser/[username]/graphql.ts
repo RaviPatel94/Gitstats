@@ -1,6 +1,5 @@
 import type { GraphQLRequestParams, ApiResponse } from "./types.ts"
 
-// Define specific types for GitHub GraphQL responses
 interface GitHubLanguageEdge {
   size: number
   node: {
@@ -83,6 +82,7 @@ export const getCompleteUserDataQuery = (isAuthenticated: boolean): string => `
       id
       name
       login
+      createdAt
       contributionsCollection {
         totalCommitContributions
       }

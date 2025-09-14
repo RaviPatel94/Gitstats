@@ -295,58 +295,6 @@ export default function EnhancedHeroPage() {
               Share Image
             </button>
 
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <a
-                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                  "Check out my GitHub card and create your own at https://gityou.vercel.app/"
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2 bg-green-600 hover:bg-green-700 rounded-lg"
-              >
-                WhatsApp
-              </a>
-
-              <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                  "Check out my GitHub card and create your own at https://gityou.vercel.app/"
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg"
-              >
-                Twitter
-              </a>
-
-              <a
-                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-                  "https://gityou.vercel.app/"
-                )}&title=${encodeURIComponent(
-                  "Check out my GitHub card and create your own!"
-                )}&summary=${encodeURIComponent(
-                  "Check out my GitHub card and create your own at https://gityou.vercel.app/"
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg"
-              >
-                LinkedIn
-              </a>
-
-              <a
-                href={`https://t.me/share/url?url=${encodeURIComponent(
-                  "https://gityou.vercel.app/"
-                )}&text=${encodeURIComponent(
-                  "Check out my GitHub card and create your own at https://gityou.vercel.app/"
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-2 bg-sky-500 hover:bg-sky-600 rounded-lg"
-              >
-                Telegram
-              </a>
-            </div>
-
             <button
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href);
@@ -367,7 +315,6 @@ export default function EnhancedHeroPage() {
         </div>
       )}
 
-      {/* Footer */}
       <footer className="bg-gray-800 py-4 text-center text-gray-400 text-sm border-t border-gray-700">
         Made by{' '}
         <a

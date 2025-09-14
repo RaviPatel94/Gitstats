@@ -28,7 +28,7 @@ export interface AuthenticatedUserData {
 }
 
 export interface UserStatsData {
-  createdAt: string | number | Date
+  createdAt: string
   id: string
   contributionsCollection: {
     totalCommitContributions: number
