@@ -9,7 +9,6 @@ export const getAccurateCommitCount = async (
   isAuthenticated: boolean,
   userData: UserStatsData,
 ): Promise<CommitCountResult> => {
-  const repositories = userData.repositories.nodes.filter((repo) => !repo.isFork && !repo.isArchived)
 
   try {
     const createdYear = new Date(userData.createdAt).getFullYear()
