@@ -21,10 +21,11 @@ interface GitHubRepository {
   };
 }
 
-interface GitHubUser {
+interface GraphQLUserData {
   id: string;
-  name: string | null;
+  name?: string;
   login: string;
+  createdAt: string;
   contributionsCollection: {
     totalCommitContributions: number;
   };
@@ -44,8 +45,9 @@ interface GitHubUser {
 }
 
 interface GitHubGraphQLResponse {
-  data: any;
-  user: GitHubUser | null;
+  data: {
+    user: GraphQLUserData | null;
+  } | null;
   errors?: Array<{
     message: string;
     type: string;

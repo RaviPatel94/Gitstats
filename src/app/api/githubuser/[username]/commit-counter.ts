@@ -1,6 +1,47 @@
-import type { UserStatsData, CommitCountResult } from "./types";
-import { makeGraphQLRequest } from "./graphql";
+import type { UserStatsData, CommitCountResult, GraphQLRequestParams, ApiResponse } from "./types";
 import { apiLogger } from "./utils";
+
+interface ContributionYear {
+  totalCommitContributions: number;
+}
+
+interface ContributionTimelineUser {
+  contributionsCollection: {
+    totalCommitContributions: number;
+  };
+  [key: `contributions${number}`]: ContributionYear;
+}
+
+interface ContributionTimelineResponse {
+  data: {
+    user: ContributionTimelineUser | null;
+  } | null;
+  errors?: Array<{
+    message: string;
+    type: string;
+    path?: string[];
+  }>;
+}
+
+const makeContributionGraphQLRequest = async (
+  { query, variables }: GraphQLRequestParams,
+  headers: Record<string, string>,
+): Promise<ApiResponse<ContributionTimelineResponse>> => {
+  const response = await fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...headers,
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+
+  return {
+    data: await response.json() as ContributionTimelineResponse,
+    status: response.status,
+    statusText: response.statusText,
+  };
+};
 
 export const getAccurateCommitCount = async (
   username: string,
@@ -39,7 +80,7 @@ export const getAccurateCommitCount = async (
       }
     `;
 
-    const timelineResponse = await makeGraphQLRequest(
+    const timelineResponse = await makeContributionGraphQLRequest(
       { query: contributionQuery, variables: { login: username } },
       { Authorization: `bearer ${token}` },
     );
@@ -49,7 +90,8 @@ export const getAccurateCommitCount = async (
       let historicalCommits = 0;
 
       for (const year of yearsRange) {
-        const yearData = user[`contributions${year}`];
+        const yearKey = `contributions${year}` as keyof ContributionTimelineUser;
+        const yearData = user[yearKey] as ContributionYear;
         if (yearData?.totalCommitContributions) {
           historicalCommits += yearData.totalCommitContributions;
         }
