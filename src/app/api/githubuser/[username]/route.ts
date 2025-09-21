@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import type { GitHubUser, AuthenticatedUserData } from "@/types/github";
+import type { GitHubUser } from "./types";
 import { getCompleteUserData } from "./graphql";
 import { getUserStats, getUserTopLanguages } from "./data-featcher";
 import { apiLogger } from "./utils";
@@ -9,7 +8,6 @@ interface ErrorWithCode extends Error {
   code?: string;
 }
 
-// Main API Handler
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ username: string }> },
@@ -18,37 +16,17 @@ export async function GET(
 
   try {
     const { username } = await context.params;
-
-    // Check for authenticated user
-    let authenticatedUserData: AuthenticatedUserData | null = null;
-    try {
-      const cookieStore = await cookies();
-      const userCookie = cookieStore.get("github_user");
-      if (userCookie?.value) {
-        const userData = JSON.parse(userCookie.value);
-        authenticatedUserData = userData;
-      }
-    } catch (cookieError) {
-      console.warn("Failed to parse user cookie:", cookieError);
-    }
     
-
-    // Determine authentication status and token
-    const isUserAuthenticated = authenticatedUserData?.login === username;
-    const githubToken = isUserAuthenticated
-      ? authenticatedUserData?.access_token
-      : process.env.GITHUB_TOKEN;
+    const githubToken = process.env.GITHUB_TOKEN;
 
     if (!githubToken) {
       throw new Error("No GitHub token available");
     }
 
-    // Get query parameters
     const requestUrl = new URL(request.url);
     const repositoriesToExclude =
       requestUrl.searchParams.get("exclude_repo")?.split(",").filter(Boolean) || [];
 
-    // Fetch data
     const [userApiResponse, userStatsData] = await Promise.all([
       fetch(`https://api.github.com/users/${username}`, {
         headers: {
@@ -57,7 +35,7 @@ export async function GET(
           Authorization: `token ${githubToken}`,
         },
       }),
-      getUserStats(username, githubToken, isUserAuthenticated, repositoriesToExclude),
+      getUserStats(username, githubToken, repositoriesToExclude),
     ]);
 
     if (!userApiResponse.ok) {
@@ -66,11 +44,7 @@ export async function GET(
 
     const basicUserData = await userApiResponse.json();
 
-    const completeDataResponse = await getCompleteUserData(
-      username,
-      githubToken,
-      isUserAuthenticated,
-    );
+    const completeDataResponse = await getCompleteUserData(username, githubToken);
     const completeUserData = completeDataResponse.data.data?.user;
 
     if (!completeUserData) {
@@ -88,7 +62,6 @@ export async function GET(
       `Repository stats: ${userStatsData.totalRepos} total (${userStatsData.publicRepos} public, ${userStatsData.privateRepos} private)`,
     );
 
-    // Return data matching GitHubUser interface
     const responseData: GitHubUser = {
       login: basicUserData.login,
       name: basicUserData.name || basicUserData.login,
@@ -105,13 +78,11 @@ export async function GET(
       totalIssues: userStatsData.totalIssues,
       topLanguages: topLanguagesData,
       _metadata: {
-        authenticated: isUserAuthenticated,
         timestamp: new Date().toISOString(),
         commitCalculationMethod: userStatsData.commitMethod,
-        dataScope: isUserAuthenticated ? "public-and-private" : "public-only",
+        dataScope: "public-only",
       },
     };
-    
 
     return NextResponse.json(responseData);
   } catch (error: unknown) {
@@ -137,8 +108,7 @@ export async function GET(
         errorMessage = "User not found";
         statusCode = 404;
       } else if (error.message?.includes("rate limit")) {
-        errorMessage =
-          "Rate limit exceeded. Please try again later or login for higher limits.";
+        errorMessage = "Rate limit exceeded. Please try again later.";
         statusCode = 429;
       } else {
         errorMessage = error.message;
@@ -148,10 +118,6 @@ export async function GET(
     return NextResponse.json(
       {
         error: errorMessage,
-        suggestion:
-          statusCode === 429
-            ? "Consider logging in with GitHub for higher rate limits"
-            : undefined,
         ...(process.env.NODE_ENV === "development" && {
           debug: { stack: error instanceof Error ? error.stack : String(error) },
         }),

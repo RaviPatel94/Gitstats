@@ -1,13 +1,12 @@
-import { GitHubUser } from '@/types/github'
-import Image from 'next/image'
+import { GitHubUser } from '@/app/api/githubuser/[username]/types';
+import Image from 'next/image';
 import QRCode from "react-qr-code";
 
 interface GitHubCardProps {
-  userData: GitHubUser | null
-  // isAuthenticated?: boolean
+  userData: GitHubUser | null;
 }
 
-export function GitHubCard({ userData}: GitHubCardProps) {
+export function GitHubCard({ userData }: GitHubCardProps) {
   const defaultData = {
     login: 'userName',
     name: 'Full Name',
@@ -18,36 +17,34 @@ export function GitHubCard({ userData}: GitHubCardProps) {
     company: 'Unemployed',
     location: 'Mumbai',
     created_at: '2016-06-24T00:00:00Z',
-    public_gists: 0,
     totalCommits: 5300,
     totalStars: 4200,
     totalPRs: 400,
     totalIssues: 60,
     topLanguages: ['#Typescript', '#C++', '#Go', '#Java', '#Python']
-  }
+  };
 
-  const data = userData || defaultData
+  const data = userData || defaultData;
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return date.toLocaleDateString('en-GB', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
-    })
-  }
+    });
+  };
 
   const formatNumber = (num: number) => {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'k'
-    return num.toString()
-  }
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+    return num.toString();
+  };
 
-  const topLanguages = data.topLanguages || []
+  const topLanguages = data.topLanguages || [];
 
   return (
     <div className="h-[576px] w-[384px] bg-white rounded-xl shadow-lg max-w-md relative">
-      {/* Header */}
       <div className="flex items-center bg-[#2B3137] rounded-t-xl h-16 justify-center gap-3 text-2xl mb-4">
         <svg
           className="w-10 h-10 text-white"
@@ -74,12 +71,10 @@ export function GitHubCard({ userData}: GitHubCardProps) {
               24 5.373 18.627 0 12 0z"
           />
         </svg>
-
         <span className="text-white text-2xl font-semibold">Github Card</span>
       </div>
 
       <div className="px-8 pt-4 flex flex-col justify-between h-[461px]">
-        {/* Profile */}
         <div className="flex items-start gap-6 h-32 mb-6">
           <div className="min-w-32 h-32 bg-neutral-400 rounded-xl flex items-center justify-center overflow-hidden">
             {data.avatar_url ? (
@@ -106,22 +101,19 @@ export function GitHubCard({ userData}: GitHubCardProps) {
               <span className='flex items-center gap-1 text-[16px]'><span className=" font-medium">{formatNumber(data.followers)}</span> Followers </span>
               <span className="flex text-[16px] items-center font-medium">
                 {formatNumber(data.totalStars)}
-                <svg className="w-4 h-4 ml-[2px" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-4 h-4 ml-[2px]" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.164c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.286 3.957c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.175 0l-3.37 2.448c-.784.57-1.838-.197-1.539-1.118l1.285-3.957a1 1 0 00-.364-1.118L2.07 9.384c-.783-.57-.38-1.81.588-1.81h4.165a1 1 0 00.95-.69l1.286-3.957z" />
                 </svg>
-
               </span>
             </div>
           </div>
         </div>
 
-        {/* Bio */}
         <div>
           <p className="text-black text-[18px] bio-text leading-[22px] font-normal max-h-[68px] mb-2">{data.bio}</p>
           <p className="text-black text-[18px] mb-4">Company: <span className="font-medium">{data.company || 'Unemployed'}</span></p>
         </div>
 
-        {/* Stats */}
         <div className="flex items-center justify-between gap-4 mb-6">
           <div>
             <div className="text-xl font-medium text-gray-800">{formatNumber(data.totalCommits || 0)}</div>
@@ -141,7 +133,6 @@ export function GitHubCard({ userData}: GitHubCardProps) {
           </div>
         </div>
 
-        {/* Footer Info */}
         <div className="flex justify-between items-start text-black">
           <div className="text-[18px]">
             <p>Joined: <span className="font-medium">{formatDate(data.created_at)}</span></p>
@@ -152,18 +143,11 @@ export function GitHubCard({ userData}: GitHubCardProps) {
               ))}
             </div>
           </div>
-          {/* <Image
-            src="/assets/watermark-template-1.svg"
-            alt="Watermark"
-            className="w-[100px] h-[100px] object-cover"
-            width={500}
-            height={500}
-          /> */}
           <QRCode value={`https://github.com/${data.login}`} className='w-[100px] h-[100px]' />
         </div>
 
         <div className="text-xs text-center text-gray-400 mt-1">gityou.vercel.app</div>
       </div>
     </div>
-  )
+  );
 }

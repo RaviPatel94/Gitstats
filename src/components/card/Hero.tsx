@@ -1,9 +1,8 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { GitHubCard } from './Card';
-import { GitHubUser } from '@/types/github';
-import { useAuth } from '@/hooks/useAuth';
-import { toPng } from "html-to-image";
+import { GitHubUser } from '@/app/api/githubuser/[username]/types';
+import { toPng } from 'html-to-image';
 import { supabase } from "@/lib/supabaseClient";
 
 export default function EnhancedHeroPage() {
@@ -15,15 +14,7 @@ export default function EnhancedHeroPage() {
   const [shareOpen, setShareOpen] = useState(false);
   const [shareImage, setShareImage] = useState<string | null>(null);
 
-  const { user: authUser } = useAuth();
   const cardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (authUser && !userData && !username) {
-      setUserData(authUser);
-      setUsername(authUser.login);
-    }
-  }, [authUser, userData, username]);
 
   const handleUsernameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,22 +75,17 @@ export default function EnhancedHeroPage() {
 
   const handleShareCard = async () => {
     if (!cardRef.current || !userData) return;
-    
+
     try {
       const dataUrl = await toPng(cardRef.current, { 
         pixelRatio: 2,
         backgroundColor: 'transparent'
       });
-      
-      // Convert data URL to blob
+
       const response = await fetch(dataUrl);
       const blob = await response.blob();
-      
-      const file = new File([blob], `github-card-${userData.login}.png`, {
-        type: 'image/png'
-      });
+      const file = new File([blob], `github-card-${userData.login}.png`, { type: 'image/png' });
 
-      // Check if Web Share API is supported and can share files
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
@@ -107,13 +93,12 @@ export default function EnhancedHeroPage() {
             text: `Check out ${userData.login}'s GitHub profile card!`,
             files: [file]
           });
-          return; // Successfully shared, exit function
+          return;
         } catch (shareError) {
           console.log('Native share failed, falling back to modal:', shareError);
         }
       }
 
-      // Fallback to modal if Web Share API is not supported or failed
       setShareImage(dataUrl);
       setShareOpen(true);
     } catch (error) {
@@ -212,15 +197,9 @@ export default function EnhancedHeroPage() {
 
             {userData && (
               <div className="mt-4 space-y-2">
-                {authUser && userData.login === authUser.login ? (
-                  <div className="p-3 bg-green-900/50 border border-green-500 rounded-lg text-green-200">
-                    ✓ Authenticated with GitHub - showing enhanced data
-                  </div>
-                ) : (
-                  <div className="p-3 bg-blue-900/50 border border-blue-500 rounded-lg text-blue-200">
-                    ℹ Showing public GitHub data for @{userData.login}
-                  </div>
-                )}
+                <div className="p-3 bg-blue-900/50 border border-blue-500 rounded-lg text-blue-200">
+                  ℹ Showing public GitHub data for @{userData.login}
+                </div>
               </div>
             )}
 
@@ -250,7 +229,6 @@ export default function EnhancedHeroPage() {
         </div>
       </div>
 
-      {/* Share Modal */}
       {shareOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-6 rounded-2xl w-80 space-y-4 text-center">
@@ -265,11 +243,8 @@ export default function EnhancedHeroPage() {
                 if (shareImage) {
                   const response = await fetch(shareImage);
                   const blob = await response.blob();
-                  const file = new File([blob], `github-card-${userData?.login}.png`, {
-                    type: 'image/png'
-                  });
-                  
-                  // Try native share first
+                  const file = new File([blob], `github-card-${userData?.login}.png`, { type: 'image/png' });
+
                   if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                       await navigator.share({
@@ -279,11 +254,9 @@ export default function EnhancedHeroPage() {
                       });
                       setShareOpen(false);
                       return;
-                    } catch (err) {
-                       console.log('Native share failed:', err);
-                    }
+                    } catch {}
                   }
-                  
+
                   const link = document.createElement('a');
                   link.download = `github-card-${userData?.login}.png`;
                   link.href = shareImage;

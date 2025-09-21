@@ -1,60 +1,58 @@
-import type { GraphQLRequestParams, ApiResponse } from "./types.ts"
+import type { GraphQLRequestParams, ApiResponse } from "./types";
 
 interface GitHubLanguageEdge {
-  size: number
+  size: number;
   node: {
-    color: string
-    name: string
-  }
+    color: string;
+    name: string;
+  };
 }
 
 interface GitHubRepository {
-  name: string
-  isPrivate: boolean
-  isFork: boolean
-  isArchived: boolean
+  name: string;
+  isPrivate: boolean;
+  isFork: boolean;
+  isArchived: boolean;
   stargazers: {
-    totalCount: number
-  }
+    totalCount: number;
+  };
   languages: {
-    edges: GitHubLanguageEdge[]
-  }
+    edges: GitHubLanguageEdge[];
+  };
 }
 
 interface GitHubUser {
-  id: string
-  name: string | null
-  login: string
+  id: string;
+  name: string | null;
+  login: string;
   contributionsCollection: {
-    totalCommitContributions: number
-  }
+    totalCommitContributions: number;
+  };
   pullRequests: {
-    totalCount: number
-  }
+    totalCount: number;
+  };
   openIssues: {
-    totalCount: number
-  }
+    totalCount: number;
+  };
   closedIssues: {
-    totalCount: number
-  }
+    totalCount: number;
+  };
   repositories: {
-    totalCount: number
-    nodes: GitHubRepository[]
-  }
+    totalCount: number;
+    nodes: GitHubRepository[];
+  };
 }
 
 interface GitHubGraphQLResponse {
-   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any
-  user: GitHubUser | null
+  data: any;
+  user: GitHubUser | null;
   errors?: Array<{
-    message: string
-    type: string
-    path?: string[]
-  }>
+    message: string;
+    type: string;
+    path?: string[];
+  }>;
 }
 
-// GraphQL request function with proper typing
 export const makeGraphQLRequest = async (
   { query, variables }: GraphQLRequestParams,
   headers: Record<string, string>,
@@ -66,17 +64,16 @@ export const makeGraphQLRequest = async (
       ...headers,
     },
     body: JSON.stringify({ query, variables }),
-  })
+  });
 
   return {
     data: await response.json() as GitHubGraphQLResponse,
     status: response.status,
     statusText: response.statusText,
-  }
-}
+  };
+};
 
-// GraphQL Query Generator
-export const getCompleteUserDataQuery = (isAuthenticated: boolean): string => `
+export const getCompleteUserDataQuery = (): string => `
   query userInfo($login: String!) {
     user(login: $login) {
       id
@@ -98,7 +95,7 @@ export const getCompleteUserDataQuery = (isAuthenticated: boolean): string => `
       repositories(
         first: 100
         ownerAffiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER]
-        ${isAuthenticated ? "" : "privacy: PUBLIC"}
+        privacy: PUBLIC
         orderBy: {field: UPDATED_AT, direction: DESC}
       ) {
         totalCount
@@ -123,17 +120,15 @@ export const getCompleteUserDataQuery = (isAuthenticated: boolean): string => `
       }
     }
   }
-`
+`;
 
-// Data fetching functions with proper return type
 export const getCompleteUserData = async (
   username: string,
   token: string,
-  isAuthenticated: boolean,
 ): Promise<ApiResponse<GitHubGraphQLResponse>> => {
-  const query = getCompleteUserDataQuery(isAuthenticated)
+  const query = getCompleteUserDataQuery();
   return makeGraphQLRequest(
     { query, variables: { login: username } }, 
     { Authorization: `bearer ${token}` }
-  )
-}
+  );
+};
