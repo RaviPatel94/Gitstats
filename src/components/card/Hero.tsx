@@ -1,9 +1,10 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { GitHubCard } from './Card';
 import { GitHubUser } from '@/app/api/githubuser/[username]/types';
 import { toPng } from 'html-to-image';
 import { supabase } from "@/lib/supabaseClient";
+import { GitHubSearchUser, GitHubSearchResponse } from '@/app/api/githubuser/[username]/types';
 
 export default function EnhancedHeroPage() {
   const [username, setUsername] = useState('');
@@ -13,8 +14,81 @@ export default function EnhancedHeroPage() {
   const [downloading, setDownloading] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [shareImage, setShareImage] = useState<string | null>(null);
-
+  const [searchResults, setSearchResults] = useState<GitHubSearchUser[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  
   const cardRef = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const searchUsers = useCallback(async (query: string) => {
+    if (!query.trim() ) {
+      setSearchResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      const response = await fetch(
+        `https://api.github.com/search/users?q=${encodeURIComponent(query)}&per_page=10`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to search users');
+      }
+
+      const data: GitHubSearchResponse = await response.json();
+      setSearchResults(data.items);
+      setShowDropdown(true);
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setUsername(value);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      searchUsers(value);
+    }, 500); 
+  };
+
+  const handleSelectUser = (selectedUser: GitHubSearchUser) => {
+    setUsername(selectedUser.login);
+    setShowDropdown(false);
+    setSearchResults([]);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleUsernameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,6 +96,7 @@ export default function EnhancedHeroPage() {
 
     setLoading(true);
     setError('');
+    setShowDropdown(false);
 
     try {
       const response = await fetch(`/api/githubuser/${username}`);
@@ -111,6 +186,8 @@ export default function EnhancedHeroPage() {
     setUserData(null);
     setUsername('');
     setError('');
+    setShowDropdown(false);
+    setSearchResults([]);
   };
 
   return (
@@ -125,27 +202,67 @@ export default function EnhancedHeroPage() {
               <label htmlFor="username" className="block text-lg font-medium mb-2">
                 Github username :
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="flex-1 px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter GitHub username"
-                  disabled={loading}
-                />
-                {userData && (
-                  <button
-                    type="button"
-                    onClick={handleClearSearch}
-                    className="px-4 py-3 cursor-pointer bg-gray-600 hover:bg-gray-700 rounded-lg font-medium transition-colors"
-                    title="Clear search"
-                  >
-                    ✕
-                  </button>
+              <div className="relative" ref={dropdownRef}>
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      id="username"
+                      value={username}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter GitHub username"
+                      disabled={loading}
+                    />
+                    {searchLoading && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                      </div>
+                    )}
+                  </div>
+                  {userData && (
+                    <button
+                      type="button"
+                      onClick={handleClearSearch}
+                      className="px-4 py-3 cursor-pointer bg-gray-600 hover:bg-gray-700 rounded-lg font-medium transition-colors"
+                      title="Clear search"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                
+                {/* Search Dropdown */}
+                {showDropdown && searchResults.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                    {searchResults.map((user) => (
+                      <div
+                        key={user.id}
+                        onClick={() => handleSelectUser(user)}
+                        className="flex items-center gap-3 p-3 hover:bg-gray-700 cursor-pointer transition-colors border-b border-gray-700 last:border-b-0"
+                      >
+                        <img
+                          src={user.avatar_url}
+                          alt={`${user.login}'s avatar`}
+                          className="w-10 h-10 rounded-full flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-medium truncate">
+                            {user.name || user.login}
+                          </div>
+                          <div className="text-gray-400 text-sm truncate">
+                            @{user.login}
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500 bg-gray-600 px-2 py-1 rounded">
+                          {user.type}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
+              
               <button
                 type="submit"
                 disabled={loading || !username.trim()}
