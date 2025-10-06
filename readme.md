@@ -1,43 +1,18 @@
-# 🌟 GitCard
+🧠 GitStats
 
-**Create a beautiful GitHub profile card by simply entering your GitHub username.**  
-Easily share your GitHub highlights with others through a stylish and responsive card.
+Generate a compact and stylish GitHub stats card in just 2 simple steps.
 
-![GitCard Banner](public/banner.png) <!-- Replace with actual path or image -->
+🚀 How It Works
 
----
+Enter your GitHub username
+Click Generate
 
-## 🚀 Features
+Your card is ready to view, share, or download instantly!
 
-- 🔍 Fetch GitHub user data using GitHub REST and GraphQL APIs
-- 🎨 Stylish and responsive card UI
-- 💡 Shows key stats: followers, public repos, top languages, and more
-- 📦 Built with **Next.js 14**, **TypeScript**, and **Tailwind CSS**
-- 📤 Export/share the card easily (optional)
+🌐 Live Demo
+👉 gityou.vercel.app
 
----
+💻 Repository
+github.com/RaviPatel94/Gitstats
 
-## 🖼️ Preview
-
-> Replace with a live link or GIF/screenshots
-
-![Preview](public/preview.png)
-
----
-
-## 🛠️ Tech Stack
-
-- **Next.js 14**
-- **TypeScript**
-- **Tailwind CSS**
-- **GitHub REST & GraphQL APIs**
-
----
-
-## ⚙️ Getting Started
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/yourusername/gitcard.git
-cd gitcard
+🖼️ Example
