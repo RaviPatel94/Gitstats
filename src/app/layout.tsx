@@ -26,6 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="google-site-verification" content="ZVCjYC2fcAJ7t7xzTIQ8OGPdZ2JphfM37hcle0fsrjY" />
+      </head>
       <body
         style={{ fontFamily: '"IBM Plex Sans Condensed", sans-serif' }}
         className={` antialiased`}
