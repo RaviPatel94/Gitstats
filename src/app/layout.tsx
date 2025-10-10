@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Github Card",
+  title: "Github Card generator",
   description: "Create yourself a github card",
   keywords: [
     "GitHub Card",
