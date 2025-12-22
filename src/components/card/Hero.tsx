@@ -405,7 +405,7 @@ export default function EnhancedHeroPage() {
         </div>
       )}
 
-      <footer className="bg-gray-800 py-4 text-center text-gray-400 text-sm border-t border-gray-700">
+      {/* <footer className="bg-gray-800 py-4 text-center text-gray-400 text-sm border-t border-gray-700">
         Made by{' '}
         <a
           href="https://github.com/ravipatel94"
@@ -415,7 +415,7 @@ export default function EnhancedHeroPage() {
         >
           ravipatel94
         </a>
-      </footer>
+      </footer> */}
     </div>
   );
 }
